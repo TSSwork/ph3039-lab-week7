@@ -4,15 +4,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
+
+from theory import DESIGN, PRACTICAL, response
 
 # --------------------------------------------------
 # Configuration
 # --------------------------------------------------
 
-R = 2400                 # Resistance (ohms)
-C = 10e-9                # Capacitance (farads)
-THEORETICAL_FC = 1 / (2 * np.pi * R * C)
+PASSBAND_EDGE = 3000     # Hz (Chebyshev ripple bandwidth)
 
 RESULTS_DIR = Path("results")
 CSV_PATTERN = "rc_pulse_response_*.csv"
@@ -89,51 +88,26 @@ gain_db = 20 * np.log10(np.maximum(gain, 1e-12))
 phase = np.angle(H, deg=True)
 
 # --------------------------------------------------
-# First-order RC low-pass fitting
+# Theoretical 2nd-order Chebyshev (Sallen-Key) response
 # --------------------------------------------------
 
-def rc_magnitude(f, k, fc):
-    return k / np.sqrt(1 + (f / fc) ** 2)
+theory_frequencies = np.logspace(
+    np.log10(frequencies.min()),
+    np.log10(frequencies.max()),
+    1000,
+)
 
+curves = [
+    (PRACTICAL, "-", *response(theory_frequencies, PRACTICAL)),
+    (DESIGN, "--", *response(theory_frequencies, DESIGN)),
+]
 
-def rc_phase(f, fc):
-    return -np.degrees(np.arctan(f / fc))
-
-
-# Fit magnitude using linear gain, not dB
-initial_k = float(np.median(gain[:min(3, len(gain))]))
-initial_fc = THEORETICAL_FC
-
-try:
-    parameters, covariance = curve_fit(
-        rc_magnitude,
-        frequencies,
-        gain,
-        p0=[initial_k, initial_fc],
-        bounds=([0, 1], [10, 1e7]),
-        maxfev=20000,
-    )
-
-    fitted_k, fitted_fc = parameters
-
-    fit_frequencies = np.logspace(
-        np.log10(frequencies.min()),
-        np.log10(frequencies.max()),
-        1000,
-    )
-
-    fitted_gain = rc_magnitude(
-        fit_frequencies, fitted_k, fitted_fc
-    )
-
-    fitted_gain_db = 20 * np.log10(fitted_gain)
-    fitted_phase = rc_phase(fit_frequencies, fitted_fc)
-
-    fit_success = True
-
-except (RuntimeError, ValueError) as error:
-    print(f"Fitting failed: {error}")
-    fit_success = False
+# Wrapped phase of the practical circuit at the measured bins
+practical_gain_db, _ = response(frequencies, PRACTICAL)
+practical_phase = np.degrees(
+    np.angle(np.exp(1j * np.radians(response(frequencies, PRACTICAL)[1])))
+)
+gain_error_db = gain_db - practical_gain_db
 
 # --------------------------------------------------
 # Plot Bode response
@@ -149,21 +123,10 @@ ax1.semilogx(
     label="FFT measured",
 )
 
-if fit_success:
-    ax1.semilogx(
-        fit_frequencies,
-        fitted_gain_db,
-        "-",
-        label="First-order RC fitted",
-    )
+for circuit, style, g_db, _ in curves:
+    ax1.semilogx(theory_frequencies, g_db, style, label=circuit["label"])
 
-ax1.axvline(
-    THEORETICAL_FC,
-    linestyle="--",
-    label=f"Theoretical fc = {THEORETICAL_FC:.1f} Hz",
-)
-
-ax1.set_title("RC Low-Pass Filter - Bode Plot")
+ax1.set_title("2nd-Order Chebyshev Low-Pass Filter - Bode Plot (FFT of pulse)")
 ax1.set_ylabel("Gain (dB)")
 ax1.grid(True, which="both")
 ax1.legend()
@@ -176,19 +139,8 @@ ax2.semilogx(
     label="FFT measured",
 )
 
-if fit_success:
-    ax2.semilogx(
-        fit_frequencies,
-        fitted_phase,
-        "-",
-        label="First-order RC fitted",
-    )
-
-ax2.axvline(
-    THEORETICAL_FC,
-    linestyle="--",
-    label="Theoretical cutoff",
-)
+for circuit, style, _, p_deg in curves:
+    ax2.semilogx(theory_frequencies, p_deg, style, label=circuit["label"])
 
 ax2.set_xlabel("Frequency (Hz)")
 ax2.set_ylabel("Phase (degrees)")
@@ -216,12 +168,14 @@ fft_csv = RESULTS_DIR / "fft_bode_data.csv"
 fft_results.to_csv(fft_csv, index=False)
 
 print("\n---------- RESULTS ----------")
-print(f"Theoretical cutoff: {THEORETICAL_FC:.2f} Hz")
+print(f"Valid FFT bins: {len(frequencies)}")
+print(f"Mean gain error vs implemented theory: {np.mean(gain_error_db):.2f} dB")
+print(f"RMS gain error vs implemented theory : "
+      f"{np.sqrt(np.mean(gain_error_db**2)):.2f} dB")
 
-if fit_success:
-    print(f"Fitted passband gain: {fitted_k:.4f}")
-    print(f"Fitted cutoff: {fitted_fc:.2f} Hz")
-    print(f"Cutoff difference: {abs(fitted_fc - THEORETICAL_FC):.2f} Hz")
+if len(frequencies) < 5:
+    print("WARNING: very few usable bins - the captured input has little "
+          "pulse energy (noise-only capture or wrong trigger/scale).")
 
 print(f"\nBode plot: {plot_path}")
 print(f"FFT data:  {fft_csv}")

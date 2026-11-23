@@ -5,7 +5,7 @@ This repository contains the laboratory experiments for investigating the respon
 Two experiments are maintained independently:
 
 1. **Impulse Response** – observes the filter's time-domain response to a pulse input.
-2. **Frequency Response (100 Hz–10 kHz)** – measures the filter's gain and phase at a range of input frequencies and produces Bode plots.
+2. **Frequency Response (100 Hz–100 kHz)** – measures the filter's gain and phase at a range of input frequencies and produces Bode plots.
 
 Each experiment has its own Python environment, instrument-control module, analysis scripts, and results directory.
 
@@ -40,7 +40,11 @@ The following practical component values are used for the filter:
 
 The practical resistor values are selected from commonly available component values.
 
-> **Note:** The theoretical transfer function used for comparison should be checked against the final implemented circuit topology and component values, particularly the Sallen-Key amplifier gain.
+The Sallen-Key amplifier gain is K = 1 + Rf/Rg ≈ 1.69 (design) or 1.68 (practical), i.e. about **+4.5 dB passband gain**, not unity. The theoretical transfer function is
+
+H(s) = K·ω0² / (s² + (3 − K)·ω0·s + ω0²),  ω0 = 1/(R·C)
+
+and is implemented in `theory.py` in both experiment folders. Both the design and practical component values are plotted for comparison.
 
 ---
 
@@ -112,7 +116,7 @@ The Python instrument-control code uses PyVISA to communicate with the equipment
 | CH1     | Filter output | Vout   |
 | CH2     | Filter input  | Vin    |
 
-Both oscilloscope probes are configured for 10× attenuation.
+Both oscilloscope probes are configured for 10× attenuation (`PROBE_ATTENUATION` in `instruments.py`). **This must match the physical probe switch.** An earlier sweep showed amplitudes about 10–20× too large, which suggests the probes were physically 1× while the software assumed 10×.
 
 ---
 
@@ -155,6 +159,12 @@ To test the pulse-generator configuration separately:
 uv run python test_pulse.py
 ```
 
+### Acquisition order
+
+The scope is stopped **before** the generator output is disabled. Disabling the generator first lets the running (AUTO-trigger) scope overwrite its memory with a noise-only record, which previously produced noisy captures. Volts/div and offset are fitted to the live signals (`auto_vertical_scale()`) before acquisition.
+
+The analysis scripts (`fft.py`, `bode_from_pulse.py`) compare the FFT-derived response with the 2nd-order Chebyshev theory.
+
 ### Pulse configuration
 
 The pulse generator is configured with the following intended settings:
@@ -179,7 +189,7 @@ The `results/` directory stores:
 
 ---
 
-## 5. Experiment 2 – Frequency Response (100 Hz–10 kHz)
+## 5. Experiment 2 – Frequency Response (100 Hz–100 kHz)
 
 **Location:** `2nd_order/100hz-100khz/`
 
@@ -188,23 +198,23 @@ This experiment measures the frequency response of the filter by applying sinuso
 ### Purpose
 
 - Generate sinusoidal input signals.
-- Measure the filter response over the frequency range of 100 Hz to 10 kHz.
+- Measure the filter response over the frequency range of 100 Hz to 100 kHz.
 - Calculate voltage gain and phase difference.
 - Generate magnitude and phase Bode plots.
 - Compare measured results with the theoretical filter response.
 
 ### Frequency sequence
 
-The intended measurement sequence follows a 1–2–3–...–9 progression within each decade:
+The sweep uses a 1–2–3–...–9 progression within each decade (not a strictly logarithmic spacing, but evenly spread on a log axis):
 
 ```text
 100, 200, 300, 400, 500, 600, 700, 800, 900,
-1000,
-2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000,
-10000 Hz
+1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000,
+10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000,
+100000 Hz
 ```
 
-This provides 19 measurement frequencies across the selected range.
+This provides 28 measurement frequencies across the selected range (defined in `main.py`).
 
 ### Signal configuration
 
@@ -212,7 +222,7 @@ This provides 19 measurement frequencies across the selected range.
 | --------------- | ----------------------- |
 | Waveform        | Sine                    |
 | Start frequency | 100 Hz                  |
-| Stop frequency  | 10 kHz                  |
+| Stop frequency  | 100 kHz                 |
 | Input amplitude | 1 Vpp                   |
 | DC offset       | 0 V                     |
 | Settling time   | 5 seconds per frequency |
@@ -225,8 +235,9 @@ The generator holds each frequency for the configured settling period before the
 | File             | Description                                               |
 | ---------------- | --------------------------------------------------------- |
 | `main.py`        | Controls the frequency sweep and data acquisition         |
+| `theory.py`      | Sallen-Key Chebyshev transfer function (design and practical values) |
 | `instruments.py` | Handles instrument communication and waveform acquisition |
-| `analysis.py`    | Calculates gain, phase, and generates Bode plots          |
+| `analysis.py`    | Calculates gain, phase, sanity-checks the data, and generates Bode plots |
 | `results/`       | Stores CSV measurements and plots                         |
 
 ### Running the experiment
@@ -342,8 +353,9 @@ The impulse experiment focuses on the time-domain response and FFT-based analysi
 3. Check the waveform generator's output amplitude and load configuration.
 4. Ensure that the filter circuit is powered correctly before applying the input signal.
 5. Verify that the oscilloscope displays a reasonable input waveform before running a complete frequency sweep.
-6. Keep the two experiment environments separate. Run `uv sync` inside the relevant experiment directory.
-7. Results are saved inside each experiment's own `results/` directory.
+6. After a sweep, `analysis.py` prints warnings if the "input" amplitude varies with frequency (CH1/CH2 probably swapped) or is far from Vpp/2 (probe setting or generator load wrong). Do not trust the Bode plot if these appear.
+7. Keep the two experiment environments separate. Run `uv sync` inside the relevant experiment directory.
+8. Results are saved inside each experiment's own `results/` directory.
 
 ---
 

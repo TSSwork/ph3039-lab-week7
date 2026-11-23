@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import glob
 import os
 
+from theory import DESIGN, PRACTICAL, response
+
 # ==========================================
 # LOAD LATEST EXPERIMENT CSV
 # ==========================================
@@ -62,24 +64,23 @@ phase_deg = np.full(len(frequencies), np.nan)
 
 gain_db[valid] = 20 * np.log10(np.abs(H[valid]))
 
-phase_deg[valid] = np.degrees(
-    np.unwrap(np.angle(H[valid]))
+# Wrapped phase: bins are non-contiguous, so unwrapping is meaningless.
+phase_deg[valid] = np.degrees(np.angle(H[valid]))
+
+# ==========================================
+# THEORETICAL 2nd-ORDER CHEBYSHEV (SALLEN-KEY)
+# ==========================================
+
+PASSBAND_EDGE = 3000  # Hz
+
+theory_f = np.logspace(
+    np.log10(frequencies[1]), np.log10(frequencies[-1]), 1000
 )
 
-# ==========================================
-# THEORETICAL RC RESPONSE
-# ==========================================
-
-R = 2400
-C = 10e-9
-
-fc = 1 / (2 * np.pi * R * C)
-
-w = 2 * np.pi * frequencies
-H_theory = 1 / (1 + 1j * w * R * C)
-
-theory_gain = 20 * np.log10(np.abs(H_theory))
-theory_phase = np.degrees(np.angle(H_theory))
+curves = [
+    (PRACTICAL, "-", *response(theory_f, PRACTICAL)),
+    (DESIGN, "--", *response(theory_f, DESIGN)),
+]
 
 # ==========================================
 # PLOT BODE RESPONSE
@@ -95,19 +96,14 @@ axes[0].semilogx(
     label="Measured FFT"
 )
 
-axes[0].semilogx(
-    frequencies[1:],
-    theory_gain[1:],
-    label="Theoretical RC"
-)
+for circuit, style, g_db, _ in curves:
+    axes[0].semilogx(theory_f, g_db, style, label=circuit["label"])
 
 axes[0].axvline(
-    fc,
-    linestyle="--",
-    label=f"Cutoff = {fc:.2f} Hz"
+    PASSBAND_EDGE, linestyle=":", color="gray", label="3 kHz passband edge"
 )
 
-axes[0].set_title("RC Low-Pass Filter - Magnitude Response")
+axes[0].set_title("2nd-Order Chebyshev Low-Pass - Magnitude (FFT of pulse)")
 axes[0].set_ylabel("Gain (dB)")
 axes[0].grid(True, which="both")
 axes[0].legend()
@@ -120,19 +116,14 @@ axes[1].semilogx(
     label="Measured FFT"
 )
 
-axes[1].semilogx(
-    frequencies[1:],
-    theory_phase[1:],
-    label="Theoretical RC"
-)
+for circuit, style, _, p_deg in curves:
+    axes[1].semilogx(theory_f, p_deg, style, label=circuit["label"])
 
 axes[1].axvline(
-    fc,
-    linestyle="--",
-    label=f"Cutoff = {fc:.2f} Hz"
+    PASSBAND_EDGE, linestyle=":", color="gray", label="3 kHz passband edge"
 )
 
-axes[1].set_title("RC Low-Pass Filter - Phase Response")
+axes[1].set_title("2nd-Order Chebyshev Low-Pass - Phase (FFT of pulse)")
 axes[1].set_xlabel("Frequency (Hz)")
 axes[1].set_ylabel("Phase (degrees)")
 axes[1].grid(True, which="both")
@@ -146,5 +137,5 @@ plt.show()
 
 print("\nSampling frequency:", sampling_frequency, "Hz")
 print("FFT frequency resolution:", sampling_frequency / N, "Hz")
-print("Theoretical cutoff:", fc, "Hz")
+print("Valid FFT bins:", int(valid.sum()))
 print("Saved: results/bode_from_pulse.png")

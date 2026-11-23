@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from instruments import KeysightInstruments
-from analysis import calculate_bode, plot_bode
+from analysis import calculate_bode, plot_bode, sanity_check
 
 
 # --------------------------------------------------
@@ -15,7 +15,7 @@ from analysis import calculate_bode, plot_bode
 # --------------------------------------------------
 
 START_FREQUENCY = 100       # Hz
-STOP_FREQUENCY = 10_000     # Hz
+STOP_FREQUENCY = 100_000    # Hz
 
 frequencies = np.array([
     100, 200, 300, 400, 500, 600, 700, 800, 900,
@@ -50,7 +50,7 @@ results = []
 
 print("=" * 55)
 print("  2ND-ORDER CHEBYSHEV LOW-PASS FILTER")
-print("  LOGARITHMIC SINE-WAVE FREQUENCY SWEEP")
+print("  SINE-WAVE SWEEP (1-2-...-9 PER DECADE)")
 print("=" * 55)
 
 print(f"Start frequency : {START_FREQUENCY} Hz")
@@ -101,6 +101,9 @@ try:
         print(f"Waiting {DWELL_TIME:.1f} seconds...")
         time.sleep(DWELL_TIME)
 
+        # Fit volts/div to the settled signals (leaves the scope running)
+        instruments.auto_vertical_scale()
+
         # Acquire a fresh single waveform record
         instruments.scope.write(":SING")
         instruments.scope.query("*OPC?")
@@ -144,6 +147,9 @@ try:
 
     # Stop generator output before plotting
     instruments.generator.write("OUTP1 OFF")
+
+    # Warn about swapped channels / wrong probe setting before plotting
+    sanity_check(results, AMPLITUDE_VPP / 2)
 
     print("\nGenerating Bode plots...")
 

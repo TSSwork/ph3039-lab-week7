@@ -4,14 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-# Supplied 2nd-order Chebyshev transfer function:
-#
-# H(s) = 1.24675439e9 /
-#        (s^2 + 46512.2563*s + 1.25934787e9)
-
-NUMERATOR = 1.24675439e9
-A1 = 46512.2563
-A0 = 1.25934787e9
+from theory import DESIGN, PRACTICAL, response
 
 
 def sine_fit(time, signal, frequency):
@@ -80,20 +73,36 @@ def calculate_bode(time, vin, vout, frequency):
     }
 
 
-def theoretical_response(frequency):
-    """Return magnitude (dB) and phase (degrees)."""
+def sanity_check(results, expected_vin_amplitude):
+    """Print warnings for the wiring/probe faults seen in earlier sweeps.
 
-    frequency = np.asarray(frequency, dtype=float)
-    omega = 2 * np.pi * frequency
+    results: list of dicts from calculate_bode (in sweep order).
+    expected_vin_amplitude: generator amplitude in volts (Vpp / 2).
+    Returns the list of warning strings.
+    """
+    warnings = []
+    vin = np.array([r["vin_v"] for r in results])
 
-    s = 1j * omega
+    # The input is the generator, so it should be flat and near Vpp/2.
+    if len(vin) >= 2 and vin.min() < 0.5 * vin.max():
+        warnings.append(
+            "Vin amplitude varies strongly with frequency "
+            f"({vin.min():.3f}-{vin.max():.3f} V). The 'input' channel "
+            "looks like the filter OUTPUT: CH1/CH2 are probably swapped."
+        )
 
-    H = NUMERATOR / (s**2 + A1 * s + A0)
+    ratio = np.median(vin) / expected_vin_amplitude
+    if not 0.7 < ratio < 1.3:
+        warnings.append(
+            f"Median Vin amplitude is {np.median(vin):.3f} V but "
+            f"{expected_vin_amplitude:.3f} V was expected (x{ratio:.1f}). "
+            "Check the probe 1x/10x switch against PROBE_ATTENUATION in "
+            "instruments.py, and the generator load setting."
+        )
 
-    magnitude_db = 20 * np.log10(np.abs(H))
-    phase_deg = np.degrees(np.unwrap(np.angle(H)))
-
-    return magnitude_db, phase_deg
+    for w in warnings:
+        print("\nWARNING:", w)
+    return warnings
 
 
 def plot_bode(csv_path, output_dir):
@@ -116,9 +125,10 @@ def plot_bode(csv_path, output_dir):
         1000
     )
 
-    theoretical_gain, theoretical_phase = theoretical_response(
-        theoretical_frequencies
-    )
+    curves = [
+        (PRACTICAL, "-", *response(theoretical_frequencies, PRACTICAL)),
+        (DESIGN, "--", *response(theoretical_frequencies, DESIGN)),
+    ]
 
     # Magnitude plot
     plt.figure(figsize=(10, 6))
@@ -130,12 +140,11 @@ def plot_bode(csv_path, output_dir):
         label="Measured"
     )
 
-    plt.semilogx(
-        theoretical_frequencies,
-        theoretical_gain,
-        "-",
-        label="Theoretical Chebyshev"
-    )
+    for circuit, style, gain_db, _ in curves:
+        plt.semilogx(
+            theoretical_frequencies, gain_db, style,
+            label=circuit["label"]
+        )
 
     plt.axvline(
         3000,
@@ -165,12 +174,11 @@ def plot_bode(csv_path, output_dir):
         label="Measured"
     )
 
-    plt.semilogx(
-        theoretical_frequencies,
-        theoretical_phase,
-        "-",
-        label="Theoretical Chebyshev"
-    )
+    for circuit, style, _, phase_deg in curves:
+        plt.semilogx(
+            theoretical_frequencies, phase_deg, style,
+            label=circuit["label"]
+        )
 
     plt.axvline(
         3000,

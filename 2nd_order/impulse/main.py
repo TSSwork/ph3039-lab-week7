@@ -20,7 +20,7 @@ PULSE_WIDTH = 40e-9       # 40 ns
 LEADING_EDGE = 10e-9      # 10 ns
 TRAILING_EDGE = 10e-9    # 10 ns
 
-RESISTANCE = 2400         # Ohms
+RESISTANCE = 2800         # Ohms (practical R1 = R2)
 CAPACITANCE = 10e-9       # Farads
 
 EXPERIMENT_DURATION = 20  # seconds
@@ -44,13 +44,13 @@ CUTOFF_FREQUENCY = 1 / (2 * np.pi * TAU)
 PERIOD = 1 / FREQUENCY
 
 print("\n========================================")
-print("       RC LOW-PASS FILTER EXPERIMENT")
+print("       2ND-ORDER CHEBYSHEV LOW-PASS EXPERIMENT")
 print("========================================")
 
 print(f"Resistance       : {RESISTANCE} Ohms")
 print(f"Capacitance      : {CAPACITANCE * 1e9:.2f} nF")
 print(f"Time constant    : {TAU * 1e6:.2f} us")
-print(f"Theoretical fc   : {CUTOFF_FREQUENCY:.2f} Hz")
+print(f"Natural freq f0  : {CUTOFF_FREQUENCY:.2f} Hz")
 print(f"Input frequency  : {FREQUENCY} Hz")
 print(f"Input period     : {PERIOD * 1e6:.2f} us")
 
@@ -106,6 +106,9 @@ try:
         trailing_edge=TRAILING_EDGE,
     )
 
+    # Fit volts/div to the live signals (also leaves the scope running).
+    instruments.auto_vertical_scale()
+
     # -------------------------------------------------
     # RUN EXPERIMENT FOR 20 SECONDS
     # -------------------------------------------------
@@ -140,31 +143,27 @@ try:
     print("\n\nExperiment duration completed.")
 
     # -------------------------------------------------
-    # STOP GENERATOR AND OSCILLOSCOPE
+    # STOP OSCILLOSCOPE FIRST, THEN DOWNLOAD
     # -------------------------------------------------
-
-    instruments.generator.write("OUTP1 OFF")
-
-    print("Generator output disabled.")
+    # The generator must stay ON until the scope has stopped. If it is
+    # switched off first, the running (AUTO-trigger) scope overwrites its
+    # memory with a noise-only record before :STOP arrives.
 
     scope.write(":STOP")
     scope.query("*OPC?")
 
-    print("Oscilloscope acquisition stopped.")
-
-    # -------------------------------------------------
-    # ACQUIRE STORED WAVEFORMS
-    # -------------------------------------------------
+    print("Oscilloscope acquisition stopped (generator still on).")
 
     print("\nDownloading waveform data...")
 
     time_axis, input_signal, output_signal = instruments.capture()
 
-    # capture() initiates a single acquisition.
-    # Stop the scope again after that acquisition.
-    scope.write(":STOP")
-
     print(f"Samples acquired: {len(time_axis)}")
+
+    # Only now is it safe to disable the generator.
+    instruments.generator.write("OUTP1 OFF")
+
+    print("Generator output disabled.")
 
     # -------------------------------------------------
     # SAVE CSV DATA
@@ -211,7 +210,7 @@ try:
     print(f"Output maximum  : {output_max:.6f} V")
     print(f"Output minimum  : {output_min:.6f} V")
 
-    print(f"\nTheoretical cutoff: {CUTOFF_FREQUENCY:.2f} Hz")
+    print(f"\nNatural frequency f0: {CUTOFF_FREQUENCY:.2f} Hz")
 
     # -------------------------------------------------
     # PLOT INPUT AND OUTPUT WAVEFORMS
@@ -248,10 +247,10 @@ try:
     axes[1].grid(True)
 
     fig.suptitle(
-        "RC Low-Pass Filter - Pulse Response\n"
+        "2nd-Order Chebyshev Low-Pass - Pulse Response\n"
         f"R = {RESISTANCE} Ohms, "
         f"C = {CAPACITANCE * 1e9:.1f} nF, "
-        f"fc = {CUTOFF_FREQUENCY:.2f} Hz"
+        f"f0 = {CUTOFF_FREQUENCY:.2f} Hz"
     )
 
     fig.tight_layout()

@@ -1,5 +1,11 @@
+import time
+
 import pyvisa
 import numpy as np
+
+# Probe attenuation entered in the scope. It MUST match the physical probe
+# switch (1x / 10x). A wrong value scales every amplitude (not the gain ratio).
+PROBE_ATTENUATION = 10
 
 
 class KeysightInstruments:
@@ -145,8 +151,8 @@ class KeysightInstruments:
 
         # CH1 = Vout, CH2 = Vin
         # Both probes are physically 10x.
-        s.write(":CHAN1:PROB 10")
-        s.write(":CHAN2:PROB 10")
+        s.write(f":CHAN1:PROB {PROBE_ATTENUATION}")
+        s.write(f":CHAN2:PROB {PROBE_ATTENUATION}")
 
         s.write(":CHAN1:COUP DC")
         s.write(":CHAN2:COUP DC")
@@ -160,6 +166,36 @@ class KeysightInstruments:
         s.write(":WAV:POIN:MODE RAW")
 
         print("\nOscilloscope configured.")
+
+    # --------------------------------------------------
+    # VERTICAL AUTO-SCALE
+    # --------------------------------------------------
+
+    def auto_vertical_scale(self, channels=(1, 2), settle=0.5,
+                            divisions_used=6.0, passes=2):
+        """Fit each channel's volts/div and offset to the live signal.
+
+        Without this the small filter output is quantised by only a few
+        ADC levels. Timebase and trigger are left untouched.
+        """
+        s = self.scope
+        s.write(":RUN")
+
+        for _ in range(passes):
+            time.sleep(settle)
+            for ch in channels:
+                vmax = float(s.query(f":MEAS:VMAX? CHAN{ch}"))
+                vmin = float(s.query(f":MEAS:VMIN? CHAN{ch}"))
+
+                # The scope returns 9.9e37 when a measurement is invalid.
+                if abs(vmax) > 1e30 or abs(vmin) > 1e30 or vmax <= vmin:
+                    print(f"Warning: CH{ch} auto-scale measurement invalid.")
+                    continue
+
+                s.write(f":CHAN{ch}:SCAL {(vmax - vmin) / divisions_used:.6g}")
+                s.write(f":CHAN{ch}:OFFS {-(vmax + vmin) / 2:.6g}")
+
+        time.sleep(settle)
 
     # --------------------------------------------------
     # WAVEFORM ACQUISITION
