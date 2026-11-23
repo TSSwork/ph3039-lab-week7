@@ -1,0 +1,5 @@
+source,passband_gain_dB,peak_freq_Hz,peaking_dB,minus3dB_cutoff_Hz
+Measured,6.11,4000.0,1.44,7076.04
+"Fit (K,f0)",6.12,3974.35,1.39,7052.53
+"Theory - implemented R,Rf",4.51,2040.41,0.07,6054.65
+"Theory - design R,Rf",4.55,2121.88,0.09,6052.62
