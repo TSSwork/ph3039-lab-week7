@@ -27,20 +27,18 @@ The filter under investigation is a second-order Chebyshev Type I low-pass filte
 
 ### Component values
 
-The following practical component values are used for the filter:
+The filter that was actually built used resistors measured with a multimeter:
 
-| Component | Calculated value | Practical value |
-| --------- | ---------------: | --------------: |
-| R1        |         2.818 kΩ |          2.8 kΩ |
-| R2        |         2.818 kΩ |          2.8 kΩ |
-| C1        |            10 nF |           10 nF |
-| C2        |            10 nF |           10 nF |
-| Rg        |            10 kΩ |           10 kΩ |
-| Rf        |         6.893 kΩ |          6.8 kΩ |
+| Component | Calculated value | Built (measured) |
+| --------- | ---------------: | ---------------: |
+| R1, R2    |         2.818 kΩ | 2.72 kΩ and 2.77 kΩ (placement not recorded) |
+| C1, C2    |            10 nF |   10 nF (nominal, not measured) |
+| Rf        |         6.893 kΩ |         6.75 kΩ |
+| Rg        |            10 kΩ |         **6.78 kΩ** |
 
-The practical resistor values are selected from commonly available component values.
+Rg was 6.78 kΩ instead of the designed 10 kΩ, so the built gain is K = 1 + 6.75/6.78 ≈ 2.00 (**+6.0 dB**) and Q ≈ 1.0, not the designed K = 1.69 (+4.5 dB), Q = 0.76. This is what the sweep shows (passband ≈ 6.1 dB, peaking ≈ 1.4 dB).
 
-The Sallen-Key amplifier gain is K = 1 + Rf/Rg ≈ 1.69 (design) or 1.68 (practical), i.e. about **+4.5 dB passband gain**, not unity. The theoretical transfer function is
+For reference, the design gain is K = 1 + Rf/Rg ≈ 1.69, i.e. about **+4.5 dB passband gain**, not unity. The theoretical transfer function is
 
 H(s) = K·ω0² / (s² + (3 − K)·ω0·s + ω0²),  ω0 = 1/(R·C)
 

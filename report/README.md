@@ -27,7 +27,7 @@ Only the 100 Hz–100 kHz sine sweep. The impulse/pulse captures (both the first
 ## Headline results
 - Measured −3 dB cutoff ≈ 7.1 kHz; passband ≈ 6.1 dB with ≈ 1.4 dB peak near 4 kHz.
 - Design/implemented theory: passband 4.5 dB, −3 dB ≈ 6.05 kHz, peaking ≈ 0.07 dB.
-- Magnitude fits K ≈ 2.02, f0 ≈ 5.49 kHz, Q ≈ 1.02 (0.09 dB RMS) → suggests Rf/Rg ≈ 1 rather than 0.68. Hypothesis: check Rf and Rg with a multimeter.
+- Magnitude fits K ≈ 2.02, f0 ≈ 5.49 kHz, Q ≈ 1.02 (0.09 dB RMS) → matches the measured resistors: Rf = 6.75 kΩ and Rg = 6.78 kΩ (not the designed 10 kΩ) give K = 2.00. The f0 offset corresponds to an effective C of about 10.4 nF (capacitors not measured).
 - Roll-off steepens to ≈ −46 dB/decade by 10 kHz; −40 dB/decade asymptote not measurable above 10 kHz with this data.
 
 ## Friday re-measurement checklist
@@ -35,3 +35,11 @@ Only the 100 Hz–100 kHz sine sweep. The impulse/pulse captures (both the first
 2. Measure Rf, Rg, R1, R2, C1, C2.
 3. Re-run the sweep (vertical auto-scale now on) and save raw waveforms if possible.
 4. Impulse: scope stops before generator off; use averaging or a wider pulse.
+
+## First-order low-pass (impulse / FFT)
+
+`lowpass_impulse.ipynb` analyses the 1-pole pulse captures from another group (`../kenura/.../1-pole_bode_data-{1,2,3}.json`, read in place, git-ignored, not copied here). Outputs: `figures/lp_*.png`, `data/lowpass_fit_summary.csv`, `data/lowpass_key_frequencies.csv`. Result: fc about 15.5 kHz, -20 dB/decade roll-off, phase to -90 deg. The 2nd-order Chebyshev part of the report uses only our own sine sweep.
+
+## Written report (Typst)
+
+`report.typ` is the lab report (preview in VS Code with the Typst/Tinymist extension, or `typst compile report.typ`). Figures and numbers for it come from `make_figures.py` (reads `data/` and the partner's pulse captures in `../kenura/`), which also writes `data/report_numbers.json`. `fonts/` holds static Regular and Bold instances of Manrope for matplotlib. `theory.py` now uses the measured components (R1 = 2.72 kΩ, R2 = 2.77 kΩ, Rf = 6.75 kΩ, Rg = 6.78 kΩ).

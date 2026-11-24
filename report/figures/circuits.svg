@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 320" font-family="Manrope, sans-serif">
+<text x="135" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#222">(a) First-order RC low-pass</text>
+<text x="26" y="138" text-anchor="middle" font-size="13" font-weight="400" fill="#222">IN</text>
+<path d="M40,150 L60,150" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M60.0,150.0 L78.0,150.0 L82.5,157.0 L91.5,143.0 L100.5,157.0 L109.5,143.0 L118.5,157.0 L127.5,143.0 L132.0,150.0 L150.0,150.0" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M150,150 L230,150" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="105" y="132" text-anchor="middle" font-size="13" font-weight="400" fill="#222">R</text>
+<circle cx="190" cy="150" r="3.4" fill="#1f4e8c"/>
+<path d="M190,150 L190,186.0" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M177,186.0 L203,186.0" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M177,194.0 L203,194.0" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M190,194.0 L190,230" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M190,230 L190,236" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M178,236 L202,236" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M183,241 L197,241" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M187,246 L193,246" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="212" y="194" text-anchor="start" font-size="13" font-weight="400" fill="#222">C</text>
+<circle cx="230" cy="150" r="3.4" fill="#1f4e8c"/>
+<text x="244" y="154" text-anchor="start" font-size="13" font-weight="400" fill="#222">OUT</text>
+<text x="570" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#222">(b) Second-order Sallen-Key Chebyshev low-pass</text>
+<text x="346" y="138" text-anchor="middle" font-size="13" font-weight="400" fill="#222">IN</text>
+<path d="M360,150 L380,150" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M380.0,150.0 L398.0,150.0 L402.5,157.0 L411.5,143.0 L420.5,157.0 L429.5,143.0 L438.5,157.0 L447.5,143.0 L452.0,150.0 L470.0,150.0" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M470,150 L490,150" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="490" cy="150" r="3.4" fill="#1f4e8c"/>
+<path d="M490.0,150.0 L508.0,150.0 L512.5,157.0 L521.5,143.0 L530.5,157.0 L539.5,143.0 L548.5,157.0 L557.5,143.0 L562.0,150.0 L580.0,150.0" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M580,150 L640,150" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="600" cy="150" r="3.4" fill="#1f4e8c"/>
+<text x="425" y="132" text-anchor="middle" font-size="13" font-weight="400" fill="#222">R₁</text>
+<text x="535" y="132" text-anchor="middle" font-size="13" font-weight="400" fill="#222">R₂</text>
+<path d="M490,150 L490,70 L755,70 L755,166" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="605" y="60" width="30" height="20" fill="#fff"/>
+<path d="M614,58 L614,82" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M626,58 L626,82" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="620" y="48" text-anchor="middle" font-size="13" font-weight="400" fill="#222">C₁</text>
+<path d="M600,150 L600,188.5" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M587,188.5 L613,188.5" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M587,196.5 L613,196.5" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M600,196.5 L600,235" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M600,235 L600,241" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M588,241 L612,241" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M593,246 L607,246" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M597,251 L603,251" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="582" y="194" text-anchor="end" font-size="13" font-weight="400" fill="#222">C₂</text>
+<path d="M640,126 L640,206 L720,166 Z" stroke="#222" stroke-width="1.6" fill="#fff" stroke-linejoin="round"/>
+<text x="652" y="148" text-anchor="middle" font-size="16" font-weight="400" fill="#222">+</text>
+<text x="652" y="194" text-anchor="middle" font-size="16" font-weight="400" fill="#222">–</text>
+<path d="M640,186 L620,186 L620,226 L755,226" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M720,166 L755,166" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="755" cy="166" r="3.4" fill="#1f4e8c"/>
+<text x="770" y="170" text-anchor="start" font-size="13" font-weight="400" fill="#222">OUT</text>
+<path d="M755.0,166.0 L755.0,178.0 L748.0,181.0 L762.0,187.0 L748.0,193.0 L762.0,199.0 L748.0,205.0 L762.0,211.0 L755.0,214.0 L755.0,226.0" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="755" cy="226" r="3.4" fill="#1f4e8c"/>
+<text x="738" y="202" text-anchor="end" font-size="13" font-weight="400" fill="#222">R<tspan font-size="10" dy="3">f</tspan></text>
+<path d="M755.0,226.0 L755.0,238.0 L748.0,241.0 L762.0,247.0 L748.0,253.0 L762.0,259.0 L748.0,265.0 L762.0,271.0 L755.0,274.0 L755.0,286.0" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="738" y="262" text-anchor="end" font-size="13" font-weight="400" fill="#222">R<tspan font-size="10" dy="3">g</tspan></text>
+<path d="M755,286 L755,292" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M743,292 L767,292" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M748,297 L762,297" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M752,302 L758,302" stroke="#222" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>
